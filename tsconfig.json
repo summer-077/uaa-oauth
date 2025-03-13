@@ -12,6 +12,12 @@
     }
   ],
   "compilerOptions": {
-    "module": "NodeNext"
+    "module": "NodeNext",
+    "noImplicitAny": false,
+    "allowJs": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   }
 }

@@ -1,0 +1,59 @@
+[
+  {
+    "title": "系统管理",
+    "icon": "user",
+    "id": "1",
+    "children": [
+      {
+        "title": "用户管理",
+        "path": "/users",
+        "type": "route",
+        "id": "1-1"
+      },
+      {
+        "title": "角色管理",
+        "path": "/roles",
+        "type": "route",
+        "id": "1-2"
+      },
+      {
+        "title": "权限管理",
+        "path": "/permissions",
+        "type": "route",
+        "id": "1-3"
+      },
+      {
+        "title": "应用管理",
+        "path": "/apps",
+        "type": "route",
+        "id": "1-4"
+      }
+    ]
+  },
+  {
+    "title": "OAuth2 管理",
+    "icon": "deployment-unit",
+    "id": "2",
+    "children": [
+      {
+        "title": "客户端管理",
+        "path": "/clients",
+        "type": "route",
+        "id": "2-1"
+      }
+    ]
+  },
+  {
+    "title": "非管理功能",
+    "icon": "notification",
+    "id": "3",
+    "children": [
+      {
+        "title": "日历",
+        "path": "/calendar",
+        "type": "route",
+        "id": "3-1"
+      }
+    ]
+  }
+]

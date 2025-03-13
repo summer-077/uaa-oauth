@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'Nunito Sans'; /* 定义字体的名称 */
+  src:
+    url('./Nunito_Sans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.woff2') format('woff2'),
+    url('./Nunito_Sans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.woff') format('woff'),
+    url('./Nunito_Sans/NunitoSans-VariableFont_YTLC\,opsz\,wdth\,wght.ttf') format('truetype');
+  font-weight: 400; /* 字体的字重（400表示常规体 Regular） */
+  font-style: normal; /* 字体的样式（normal表示非斜体） */
+}

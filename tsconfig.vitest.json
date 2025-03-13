@@ -1,11 +1,18 @@
 {
   "extends": "./tsconfig.app.json",
-  "include": ["src/**/__tests__/*", "env.d.ts"],
-  "exclude": [],
   "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist/vitest", // 添加编译输出目录
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",
-
-    "lib": [],
     "types": ["node", "jsdom"]
-  }
+  },
+  "include": [
+    "src/**/__tests__/*", // 测试文件
+    "env.d.ts", // 全局声明文件
+    "src/**/*.ts", // TypeScript 源码
+    "src/**/*.d.ts" // 类型声明文件
+  ],
+  "exclude": [
+    "node_modules" // 排除依赖目录
+  ]
 }

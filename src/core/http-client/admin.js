@@ -1,0 +1,68 @@
+import axios from 'axios'
+import { useAuthStore } from '@/store'
+const authStore = useAuthStore() // 获取 Pinia store 实例
+// 使用特定实例，避免污染全局
+const ADMIN_AXIOS = axios.create({
+  baseURL: `${import.meta.env.VITE_APP_API_URL}/admin`,
+  timeout: 10000,
+})
+
+// 请求拦截器，给每个请求加上认证头
+ADMIN_AXIOS.interceptors.request.use(
+  (config) => {
+    const token = authStore.auth.accessToken
+    if (token) {
+      config.headers['Authorization'] = 'Bearer ' + token
+    }
+    return config
+  },
+  (error) => Promise.reject(error),
+)
+// 响应拦截器，在遇到认证错误的时候，使用 refreshToken 进行刷新
+ADMIN_AXIOS.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error) => {
+    // 存储失败的请求
+    const originalRequest = error.config
+    // 由于目前 problem-spring-web 的 bug，导致有时会以 500 形式返回认证异常
+    // 未来版本更新应该可以解决。
+    if (
+      (error.response.status === 401 ||
+        (error.response.status === 500 &&
+          (error.response.data.detail ===
+            'Full authentication is required to access this resource' ||
+            error.response.data.detail === 'Access is denied'))) &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true
+      const refreshToken = authStore.auth.refreshToken
+      // 刷新 token
+      return axios
+        .post(`${import.meta.env.VITE_APP_OAUTH_TOKEN_URL}`, null, {
+          params: {
+            grant_type: 'refresh_token',
+            client_id: `${import.meta.env.VITE_APP_OAUTH_CLIENT_ID}`,
+            client_secret: `${import.meta.env.VITE_APP_OAUTH_CLIENT_SECRET}`,
+            refresh_token: refreshToken,
+          },
+        })
+        .then((res) => {
+          // 在 store 中存储
+          authStore.commit('loginSuccess', {
+            accessToken: res.data.access_token,
+            refreshToken: res.data.refresh_token,
+          })
+          // 使用新的 token 发送原有的请求
+          ADMIN_AXIOS.defaults.headers.common['Authorization'] =
+            'Bearer ' + authStore.auth.accessToken
+          return ADMIN_AXIOS(originalRequest)
+        })
+        .catch((error) => Promise.reject(error))
+    }
+    return Promise.reject(error)
+  },
+)
+
+export default ADMIN_AXIOS
