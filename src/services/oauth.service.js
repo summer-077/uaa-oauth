@@ -19,10 +19,8 @@ export default {
     })
   },
   getUrl() {
-    debugger
     const state = UTIL.generateState()
     sessionStorage.setItem('state', state)
-    console.log('import.meta.env', import.meta.env)
     window.location.href = `${import.meta.env.VITE_APP_OAUTH_AUTH_URL}&state=${state}`
   },
 }

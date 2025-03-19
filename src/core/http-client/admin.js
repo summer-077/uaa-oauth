@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store'
 const authStore = useAuthStore() // 获取 Pinia store 实例
 // 使用特定实例，避免污染全局
 const ADMIN_AXIOS = axios.create({
-  baseURL: `${import.meta.env.VITE_APP_API_URL}/admin`,
+  baseURL: `${import.meta.env.VITE_APP_API_URL}/api/admin`,
   timeout: 10000,
 })
 

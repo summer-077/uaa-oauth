@@ -17,8 +17,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 app.use(ElementPlus)
 
-const pinia = createPinia()
-app.use(pinia)
-export { pinia }
+app.use(createPinia())
 app.use(router)
 app.mount('#app')

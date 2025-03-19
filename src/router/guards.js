@@ -1,30 +1,26 @@
-import { useAuthStore } from '@/store' // 使用命名导入
+import { useAuthStore } from '@/store'
 import UTIL from '@/core/util'
 import OAUTH_API from '@/services/oauth.service'
-import { pinia } from '@/main'
 export default {
   globalGuard: (to, from, next) => {
     // 我们在路由的配置中使用一个元数据 meta.requiresAuth 来标识是否需要认证
-    const authStore = useAuthStore(pinia) // 获取 store 实例
+    const authStore = useAuthStore()
+    console.log('authStore.isLogin', authStore.isLogin)
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       // 如果路由需要认证，则检查是否已经登录，如果没有，导航到登录页面
       if (!authStore.isLogin) {
-        // 使用 getter 来判断是否登录
-        // 判断浏览器地址栏是否有 code 和 state，如果有说明是授权服务器重定向回来的
         const codePattern = /code=([\w-.]+)/
         const codeMatched = codePattern.exec(window.location.href)
         const statePattern = /state=([\w-.]+)/
         const stateMatched = statePattern.exec(window.location.href)
 
         if (codeMatched && codeMatched.length > 1 && statePattern && stateMatched.length > 1) {
-          // 有 code 就触发登录 Action，使用 code 换取 token
           authStore
             .login({
               code: codeMatched[1],
               oauthState: stateMatched[1],
             })
             .then(() => {
-              // 成功获取 token 后重定向到首页，否则 code 一直会存在
               window.location.href = '/'
               next()
             })
@@ -50,7 +46,6 @@ export default {
             !UTIL.hasPermissionIn(record.meta.requiredPermissions),
         )
       ) {
-        debugger
         next({
           path: '/forbidden',
         })

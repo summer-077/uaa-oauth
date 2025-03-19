@@ -5,10 +5,14 @@ import guards from './guards.js'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // {
-    //   path: '/logout',
-    //   component: () => import(/* webpackChunkName: "logout" */ '../views/Logout.vue'),
-    // },
+    {
+      path: '/logout',
+      component: () => import(/* webpackChunkName: "logout" */ '../views/users/Logout.vue'),
+    },
+    {
+      path: '/login',
+      component: () => import(/* webpackChunkName: "logout" */ '../views/users/Login.vue'),
+    },
     // {
     //   path: '/forbidden',
     //   component: () => import(/* webpackChunkName: "forbidden" */ '../views/Forbidden.vue'),
@@ -77,6 +81,17 @@ const router = createRouter({
         },
         {
           path: 'permissions',
+          component: () =>
+            import(/* webpackChunkName: "permissions" */ '../views/permissions/Permissions.vue'),
+          meta: {
+            breadcrumb: [
+              { to: '/', label: '首页' },
+              { to: '', label: '权限管理' },
+            ],
+          },
+        },
+        {
+          path: 'apps',
           component: () =>
             import(/* webpackChunkName: "permissions" */ '../views/permissions/Permissions.vue'),
           meta: {

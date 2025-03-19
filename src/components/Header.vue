@@ -16,7 +16,7 @@
           </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item> 退出登录</el-dropdown-item>
+              <el-dropdown-item @click="logout()"> 退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -25,7 +25,13 @@
   </div>
 </template>
 
-<script lang="ts"></script>
+<script setup>
+import { useAuthStore } from '@/store/index.js'
+const authStore = useAuthStore()
+const logout = () => {
+  authStore.reset()
+}
+</script>
 
 <style scoped lang="less">
 #header {
