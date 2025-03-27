@@ -16,6 +16,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      '/dev': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace('/dev', '/api'),
+      },
     },
   },
   plugins: [vue(), vueJsx(), vueDevTools(), tailwindcss()],

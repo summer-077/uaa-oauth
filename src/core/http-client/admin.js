@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store'
 const authStore = useAuthStore() // 获取 Pinia store 实例
 // 使用特定实例，避免污染全局
 const ADMIN_AXIOS = axios.create({
-  baseURL: `${import.meta.env.VITE_APP_API_URL}/api/admin`,
+  baseURL: '/api/admin',
   timeout: 10000,
 })
 
@@ -50,10 +50,13 @@ ADMIN_AXIOS.interceptors.response.use(
         })
         .then((res) => {
           // 在 store 中存储
-          authStore.commit('loginSuccess', {
-            accessToken: res.data.access_token,
-            refreshToken: res.data.refresh_token,
+          authStore.$patch({
+            auth: {
+              accessToken: res.data.access_token,
+              refreshToken: res.data.refresh_token,
+            },
           })
+
           // 使用新的 token 发送原有的请求
           ADMIN_AXIOS.defaults.headers.common['Authorization'] =
             'Bearer ' + authStore.auth.accessToken

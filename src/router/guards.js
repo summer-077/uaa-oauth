@@ -5,7 +5,6 @@ export default {
   globalGuard: (to, from, next) => {
     // 我们在路由的配置中使用一个元数据 meta.requiresAuth 来标识是否需要认证
     const authStore = useAuthStore()
-    console.log('authStore.isLogin', authStore.isLogin)
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       // 如果路由需要认证，则检查是否已经登录，如果没有，导航到登录页面
       if (!authStore.isLogin) {

@@ -37,8 +37,13 @@
   --section-gap: 160px;
   /* 主题色 */
   --theme-color: #4880ff;
+  --theme-button-color: #4461f2;
+  --theme-button-forbid-color: #4461f296;
   /* 灰度字体 */
   --font-color-gray: #565656;
+
+  --button-border-radius: 10px;
+  --card-border-radius: 10px;
 }
 
 @media (prefers-color-scheme: dark) {

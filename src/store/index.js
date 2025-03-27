@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import OAUTH_API from '../services/oauth.service'
+import AUTH_API from '../services/auth.service'
 import router from '../router'
 import UTIL from '@/core/util'
 
@@ -29,6 +30,7 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     // Login action
+    //授权码颁发的code，路径中的code参数
     async login({ code, oauthState }) {
       try {
         const res = await OAUTH_API.getToken(code, oauthState)
@@ -49,26 +51,60 @@ export const useAuthStore = defineStore('auth', {
         throw err
       }
     },
+    async sendMfa(mfaType, number) {
+      try {
+        const response = await AUTH_API.sendMfa(mfaType, number)
+        const elements = response.headers['x-authenticate'].split(', ')
+        const MFA_PREFIX = 'realm='
+        if (elements.length === 2 && elements[0] === 'mfa' && elements[1].startsWith(MFA_PREFIX)) {
+          this.mfa = elements[1].replace(MFA_PREFIX, '')
+          this.loginErrMsg = null
+        }
+      } catch (err) {
+        this.loginErrMsg = UTIL.getErrorDetailFromResponse(err) || '发送验证码错误'
+      }
+    },
+
+    async verifyMfa(code) {
+      try {
+        const res = await AUTH_API.verifyMfa(this.mfa, code)
+        if (res.data) {
+          this.loginSuccess({
+            accessToken: res.data.accessToken,
+            refreshToken: res.data.refreshToken,
+          })
+          router.push('/')
+          return res.data.redirectUrl
+        }
+        this.loginFail('服务器返回结果异常')
+        router.push('/login')
+      } catch (err) {
+        this.loginFail(UTIL.getErrorDetailFromResponse(err.response?.data) || '验证码不正确或过期')
+        router.push('/login')
+      }
+    },
 
     // Reset action
     reset() {
-      this.login = false
+      this.isLogin = false
       this.loginErrMsg = null
       this.mfa = null
       this.auth = { accessToken: null, refreshToken: null }
 
       sessionStorage.clear()
+      localStorage.clear()
+
       document.cookie.split(';').forEach(function (c) {
         document.cookie = c
           .replace(/^ +/, '')
-          .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/')
+          .replace(/=.*/, '=;expires=' + new Date(0).toUTCString() + ';path=/')
       })
       router.push('/logout')
     },
 
     // Mutation-like methods
     loginSuccess(payload) {
-      this.login = true
+      this.isLogin = true
       this.loginErrMsg = null
       this.mfa = null
       this.auth = {
@@ -78,13 +114,13 @@ export const useAuthStore = defineStore('auth', {
     },
 
     loginFail(message) {
-      this.login = false
+      this.isLogin = false
       this.loginErrMsg = message
       this.auth = null
     },
   },
   getters: {
-    isLoggedIn: (state) => state.login,
+    isLoggedIn: (state) => state.isLogin,
     loginError: (state) => state.loginErrMsg,
     mfaId: (state) => state.mfa,
     userPermissions: (state) => {

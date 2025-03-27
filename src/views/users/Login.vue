@@ -21,7 +21,18 @@
         </div>
         <div class="form">
           <div class="form_con">
-            <el-form :model="form" label-width="0" style="width: 260px">
+            <el-form :model="form" label-width="0" style="margin-top: 20px">
+              <!-- 错误信息 -->
+              <el-form-item>
+                <el-alert
+                  v-show="authStore.loginErrMsg"
+                  class="fixed top-0"
+                  :title="authStore.loginErrMsg"
+                  type="error"
+                  :closable="false"
+                />
+              </el-form-item>
+
               <el-form-item>
                 <el-input
                   v-model="form.username"
@@ -30,15 +41,26 @@
                   :suffix-icon="User"
                 />
               </el-form-item>
-              <el-form-item v-if="type == 2">
-                <el-input v-model="form.code" placeholder="请输入验证码" clearable>
+              <el-form-item v-if="type !== 1">
+                <el-input
+                  :class="isDisabled ? 'input-append-disabled' : 'input-append'"
+                  v-model="form.code"
+                  placeholder="请输入验证码"
+                  clearable
+                >
+                  <!-- 验证码按钮 -->
                   <template #append
-                    ><el-button @click="useVerificationCode">{{ text }}</el-button></template
+                    ><el-button
+                      :disabled="isDisabled"
+                      type="primary"
+                      @click="useVerificationCode"
+                      >{{ text }}</el-button
+                    ></template
                   >
                 </el-input>
-                <div style="height: 30px; width: 100%"></div>
+                <div style="height: 42px; width: 100%"></div>
               </el-form-item>
-              <el-form-item v-if="type != 2">
+              <el-form-item v-if="type == 1">
                 <el-input
                   v-model="form.password"
                   type="password"
@@ -60,23 +82,13 @@
             <div class="line"></div>
           </div>
           <div class="login_method">
-            <div class="item">
-              <img
-                src="https://cdn.lzzsyx.cn/10001/20250315/5c2a52bc80636628a78e02585835b741.png"
-                alt=""
-              />
-            </div>
-            <div @click="checkLoginType(3)" class="item">
-              <img
-                src="https://cdn.lzzsyx.cn/10001/20250315/f50bb99ccdfc9720060d952c5a926395.png"
-                alt=""
-              />
-            </div>
-            <div @click="checkLoginType(2)" class="item">
-              <img
-                src="https://cdn.lzzsyx.cn/10001/20250315/6b6c276976ea7803a019fa6214097f95.png"
-                alt=""
-              />
+            <div
+              v-for="(method, index) in loginMethods"
+              :key="index"
+              @click="checkLoginType(method.type)"
+              class="item"
+            >
+              <img :src="getImagePath(method.icon)" :alt="method.alt" />
             </div>
           </div>
         </div>
@@ -89,68 +101,94 @@
 import { User, Hide } from '@element-plus/icons-vue'
 import { reactive, ref, toRefs } from 'vue'
 import { OAUTH_AXIOS } from '@/core/http-client/oauth'
+import AUTH_AXIOS from '@/services/auth.service'
+// import OAUTH_AXIOS from '@/services/oauth.service'
+import { useAuthStore } from '@/store'
 const placeholder = reactive({
   username: '请输入账号',
   password: '请输入密码',
 })
+const loginMethods = ref([
+  { type: 1, icon: 'wechat', alt: 'WeChat Login' },
+  { type: 2, icon: 'email', alt: 'Email Login' },
+  { type: 3, icon: 'phone', alt: 'Phone Login' },
+])
 
-// 1:用户名密码登录，2：手机号验证码登录，3：邮箱登录，4：微信登录
+const getImagePath = (iconName) => {
+  return new URL(`../../assets/svg/${iconName}.png`, import.meta.url).href
+}
 const type = ref(1)
 let timer = null
 const text = ref('获取验证码')
 
 const placeholderMap = {
   1: { username: '请输入用户名', password: '请输入密码' },
-  2: { username: '请输入手机号码', password: '请输入验证码' },
-  3: { username: '请输入邮箱', password: '请输入密码' },
+  2: { username: '请输入邮箱', password: '请输入验证码' },
+  3: { username: '请输入手机号码', password: '请输入验证码' },
 }
 
 const checkLoginType = (t) => {
-  type.value = t === 2 ? (type.value === 2 ? 1 : 2) : t
-
-  const placeholders = placeholderMap[type.value] || { username: '', password: '' }
+  type.value = t
+  const placeholders = placeholderMap[t] || { username: '', password: '' }
   placeholder.username = placeholders.username
   placeholder.password = placeholders.password
 }
-
-const useVerificationCode = () => {
-  if (!timer) {
-    let countdown = 60
-    timer = setInterval(() => {
-      if (countdown < 1) {
-        text.value = '获取验证码'
-        clearInterval(timer)
-        timer = null
-      } else {
-        countdown--
-        text.value = countdown + 's后重试'
-      }
-    }, 1000)
-  }
-}
+const isDisabled = ref(false)
+const authStore = useAuthStore()
 const form = reactive({
   username: '',
   password: '',
   code: '',
 })
-const { username, password } = toRefs(form)
-const submit = () => {
-  OAUTH_AXIOS.post('/login', { username: username.value, password: password.value })
-    .then((response) => {
-      // 1. 如果浏览器自动处理了 302 重定向
-      if (response.request.responseURL) {
-        window.location.href = response.request.responseURL
-      } else {
-        // 2. 手动获取 Location 头部进行跳转
-        const location = response.headers.location
-        if (location) {
-          window.location.href = location
+const { username, password, code } = toRefs(form)
+
+//发送验证码流程
+const useVerificationCode = async () => {
+  if (!timer) {
+    await authStore.sendMfa(type.value === 2 ? '1' : '0', username.value)
+    if (!authStore.loginErrMsg) {
+      let countdown = 60
+      isDisabled.value = true
+      timer = setInterval(() => {
+        if (countdown < 1) {
+          text.value = '获取验证码'
+          clearInterval(timer)
+          timer = null
+          isDisabled.value = false
         } else {
-          console.error('No Location header found')
+          countdown--
+          text.value = countdown + 's后重试'
         }
-      }
-    })
-    .catch((error) => console.error('Login error:', error))
+      }, 1000)
+    }
+  }
+}
+
+const submit = async () => {
+  //用户名密码登录流程
+  // authStore.login(username.value, password.value, type.value)
+  if (type.value === 1) {
+    OAUTH_AXIOS.post('/login', { username: username.value, password: password.value })
+      .then((response) => {
+        // 1. 如果浏览器自动处理了 302 重定向
+        if (response.request.responseURL) {
+          window.location.href = response.request.responseURL
+        } else {
+          // 2. 手动获取 Location 头部进行跳转
+          const location = response.headers.location
+          if (location) {
+            window.location.href = location
+          } else {
+            console.error('No Location header found')
+          }
+        }
+      })
+      .catch((error) => console.error('Login error:', error))
+  } else {
+    const res = await authStore.verifyMfa(code.value)
+
+    window.location.href = res
+  }
 }
 </script>
 
@@ -159,16 +197,31 @@ const submit = () => {
   background-color: #eaf0f7;
   box-shadow: 0 0 0 0;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--button-border-radius);
 }
 ::v-deep .el-card {
-  border-radius: 20px;
+  border-radius: var(--card-border-radius);
 }
 ::v-deep .el-button {
   font-weight: 900;
-  background-color: #4461f2;
+  background-color: var(--theme-button-color);
   border-radius: 10px;
   height: 40px;
+}
+//覆盖input-append样式
+// ::v-deep .el-input-group__append {
+//   color: red;
+// }
+::v-deep .el-input-group__append {
+  color: #fff;
+  border-radius: var(--button-border-radius);
+  margin-left: 10px;
+}
+.input-append-disabled ::v-deep .el-input-group__append {
+  background-color: var(--theme-button-forbid-color);
+}
+::v-deep .input-append .el-input-group__append {
+  background-color: var(--theme-button-color);
 }
 .login {
   margin: 0;

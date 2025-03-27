@@ -5,9 +5,9 @@ export default {
     const url = `/login`
     return AUTH_AXIOS.post(url, { username, password })
   },
-  sendMfa(mfaId, mfaType) {
+  sendMfa(mfaType, number) {
     const url = `/totp`
-    return AUTH_AXIOS.put(url, { mfaId, mfaType })
+    return AUTH_AXIOS.put(url, { mfaType: mfaType, number: number })
   },
   verifyMfa(mfaId, code) {
     const url = `/totp`
