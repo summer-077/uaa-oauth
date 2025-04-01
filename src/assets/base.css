@@ -44,6 +44,9 @@
 
   --button-border-radius: 10px;
   --card-border-radius: 10px;
+
+  /* 标题与内容空隙 */
+  --margin-bottom: 16px;
 }
 
 @media (prefers-color-scheme: dark) {

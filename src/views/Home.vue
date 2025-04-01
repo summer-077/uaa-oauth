@@ -64,6 +64,6 @@ const route = useRoute()
 .el-card {
   border-radius: 14px;
   border: 0;
-  margin-bottom: 100px;
+  margin-bottom: 20px;
 }
 </style>

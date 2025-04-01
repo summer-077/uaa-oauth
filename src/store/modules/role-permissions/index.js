@@ -1,9 +1,10 @@
+// stores/rolePermissions.js
 import { defineStore } from 'pinia'
 import ADMIN_API from '@/services/admin.service'
 import UTIL from '@/core/util'
 import router from '@/router'
 import { union, difference } from 'lodash'
-
+import { useRolesStore } from '@/store/modules/roles'
 export const useRolePermissionsStore = defineStore('rolePermissions', {
   state: () => ({
     assignedPermissions: [],
@@ -12,57 +13,57 @@ export const useRolePermissionsStore = defineStore('rolePermissions', {
     availablePermissions: [],
   }),
   actions: {
-    async loadAvailable(roleId) {
-      this.loading = true
-      this.error = null
-      try {
-        const res = await ADMIN_API.loadAvailablePermissions(roleId)
-        if (res && res.data) {
-          this.availablePermissions = res.data
-        }
-      } catch (err) {
-        this.error = UTIL.getErrorDetailFromResponse(err) || '加载可用权限列表失败'
-      } finally {
-        this.loading = false
-      }
-    },
     async load(roleId) {
       this.loading = true
-      this.error = null
       try {
         const res = await ADMIN_API.loadByRoleId(roleId)
-        if (res && res.data) {
+        if (res?.data) {
           this.assignedPermissions = res.data.permissions
-          await this.loadAvailable(roleId)
+          this.error = null
+
+          // Load available permissions
+          try {
+            const availableRes = await ADMIN_API.loadAvailablePermissions(roleId)
+            if (availableRes?.data) {
+              this.availablePermissions = availableRes.data
+            }
+          } catch (err) {
+            this.error = UTIL.getErrorDetailFromResponse(err) || '加载可用权限列表失败'
+            this.availablePermissions = []
+          }
         }
       } catch (err) {
         this.error = UTIL.getErrorDetailFromResponse(err) || '加载角色失败'
+        this.assignedPermissions = []
       } finally {
         this.loading = false
       }
     },
-    moveToAssigned(payload) {
-      const selectedRoles = this.availablePermissions.filter((role) => payload.includes(role.id))
+
+    moveToAssigned(ids) {
+      const selectedRoles = this.availablePermissions.filter((role) => ids.includes(role.id))
       this.assignedPermissions = union(this.assignedPermissions, selectedRoles)
       this.availablePermissions = difference(this.availablePermissions, selectedRoles)
     },
-    moveToAvailable(payload) {
-      const selectedRoles = this.assignedPermissions.filter((role) => payload.includes(role.id))
+
+    moveToAvailable(ids) {
+      const selectedRoles = this.assignedPermissions.filter((role) => ids.includes(role.id))
       this.availablePermissions = union(this.availablePermissions, selectedRoles)
       this.assignedPermissions = difference(this.assignedPermissions, selectedRoles)
     },
+
     async save(roleId) {
       this.loading = true
-      this.error = null
       try {
         const res = await ADMIN_API.saveRolePermissions(
           roleId,
-          this.assignedPermissions.map((permission) => permission.id),
+          this.assignedPermissions.map((p) => p.id),
         )
-        if (res && res.data) {
-          // 假设 rolesModule 是另一个 Pinia store
-          const rolesModule = useRolesStore()
-          rolesModule.updateSuccess(res.data)
+
+        if (res?.data) {
+          // 假设有一个 roles store 需要更新
+          const rolesStore = useRolesStore()
+          rolesStore.updateSuccess(res.data)
           router.push('/roles')
         }
       } catch (err) {

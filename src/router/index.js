@@ -19,7 +19,8 @@ const router = createRouter({
     // },
     {
       path: '/',
-      component: HomeView,
+      // component: HomeView,
+      component: () => import(/* webpackChunkName: "users" */ '../views/home.vue'),
       meta: {
         breadcrumb: [{ to: '/', label: '首页' }],
       },
@@ -30,7 +31,7 @@ const router = createRouter({
         },
         {
           path: 'users',
-          name: 'users',
+          name: '用户管理',
           component: () => import(/* webpackChunkName: "users" */ '../views/users/Users.vue'),
           meta: {
             breadcrumb: [
@@ -55,6 +56,7 @@ const router = createRouter({
         },
         {
           path: 'roles',
+          name: '角色管理',
           component: () => import(/* webpackChunkName: "roles" */ '../views/roles/Roles.vue'),
           meta: {
             breadcrumb: [
@@ -62,22 +64,22 @@ const router = createRouter({
               { to: '', label: '角色管理' },
             ],
           },
-          // children: [
-          //   {
-          //     path: ':roleId',
-          //     component: () =>
-          //       import(
-          //         /* webpackChunkName: "role-permissions" */ '../views/roles/RolePermissions.vue'
-          //       ),
-          //     meta: {
-          //       breadcrumb: [
-          //         { to: '/', label: '首页' },
-          //         { to: '/users', label: '角色管理' },
-          //         { to: '', label: '分配权限' },
-          //       ],
-          //     },
-          //   },
-          // ],
+          children: [
+            {
+              path: ':roleId',
+              component: () =>
+                import(
+                  /* webpackChunkName: "role-permissions" */ '../views/roles/RolePermissions.vue'
+                ),
+              meta: {
+                breadcrumb: [
+                  { to: '/', label: '首页' },
+                  { to: '/users', label: '角色管理' },
+                  { to: '', label: '分配权限' },
+                ],
+              },
+            },
+          ],
         },
         {
           path: 'permissions',
@@ -91,18 +93,8 @@ const router = createRouter({
           },
         },
         {
-          path: 'apps',
-          component: () =>
-            import(/* webpackChunkName: "permissions" */ '../views/permissions/Permissions.vue'),
-          meta: {
-            breadcrumb: [
-              { to: '/', label: '首页' },
-              { to: '', label: '权限管理' },
-            ],
-          },
-        },
-        {
           path: 'clients',
+          name: 'OAuth2 客户端管理',
           component: () =>
             import(/* webpackChunkName: "permissions" */ '../views/clients/Clients.vue'),
           meta: {

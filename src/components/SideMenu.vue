@@ -42,7 +42,7 @@ const isCollapse = ref(false)
   margin: 10px 20px;
   background-color: #fff;
   border-radius: 6px;
-  font-size: 17px;
+  font-size: 14px;
 
   &.is-active {
     color: #fff;

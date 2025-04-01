@@ -7,3 +7,30 @@
   font-weight: 900;
   height: 100vh;
 }
+
+/* .el-button--primary {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+} */
+.el-table th.el-table__cell {
+  background-color: #f1f4f9 !important;
+  color: black;
+  padding: 15px 10px;
+}
+.el-table--enable-row-transition .el-table__body td.el-table__cell {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.el-table {
+  border-radius: 10px;
+}
+.el-table .el-button {
+  letter-spacing: 5px;
+  font-weight: 800;
+  padding: 8px 0px;
+}
+.el-table tr,
+.el-input,
+.el-form {
+  font-weight: 500;
+}
