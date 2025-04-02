@@ -30,6 +30,7 @@ ADMIN_AXIOS.interceptors.response.use(
     // 未来版本更新应该可以解决。
     if (
       (error.response.status === 401 ||
+        error.response.status === 302 ||
         (error.response.status === 500 &&
           (error.response.data.detail ===
             'Full authentication is required to access this resource' ||

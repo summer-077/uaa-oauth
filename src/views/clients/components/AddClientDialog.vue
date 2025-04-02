@@ -9,14 +9,20 @@
         show-icon
       />
     </div>
-    <el-form ref="form" :model="model" :rules="rules" :label-position="labelPosition">
+    <el-form
+      ref="form"
+      label-width="150px"
+      :model="model"
+      :rules="rules"
+      :label-position="labelPosition"
+    >
       <el-form-item prop="clientId" label="客户端 Id">
         <el-input v-model="model.clientId" type="text" autocomplete="off" />
       </el-form-item>
       <el-form-item prop="clientSecret" label="客户端 Secret">
         <el-input v-model="model.clientSecret" type="text" autocomplete="off" />
       </el-form-item>
-      <el-form-item prop="scopes" label="授权范围">
+      <el-form-item prop="" label="授权范围">
         <el-select v-model="model.scopes" multiple style="width: 100%" placeholder="请选择授权范围">
           <el-option value="user.admin" label="用户管理" />
           <el-option value="client.admin" label="客户端管理" />
@@ -71,7 +77,7 @@
 import { ref, computed, watch } from 'vue'
 import { useClientsStore } from '@/store/modules/clients'
 import { addClientRules } from '@/views/form-rules/add-client'
-
+import { ElMessage } from 'element-plus'
 const props = defineProps({
   show: Boolean,
   record: Object,
@@ -102,15 +108,17 @@ const handleOk = async () => {
       emit('submitted', model.value)
       const client = {
         ...model.value,
-        redirectUris: model.value.redirectUris.split(','),
       }
-      const res = await clientsStore.addClient(client)
+      const res = await clientsStore.add(client)
       if (res) {
         form.value.resetFields()
         visible.value = false
+        ElMessage.success('客户端信息添加成功')
+        clientsStore.load()
       }
     }
   } catch (error) {
+    ElMessage.error('更新失败: ' + (err.message || err))
     console.error('Validation failed:', error)
   }
 }

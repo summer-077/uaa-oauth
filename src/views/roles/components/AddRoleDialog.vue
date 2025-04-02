@@ -8,7 +8,7 @@
       style="margin-bottom: 16px"
     />
 
-    <el-form ref="formRef" :model="model" :rules="rules" label-width="80px">
+    <el-form ref="formRef" :model="model" :rules="rules" label-width="100px">
       <el-form-item prop="roleName" label="角色标识">
         <el-input v-model="model.roleName" autocomplete="off" />
       </el-form-item>

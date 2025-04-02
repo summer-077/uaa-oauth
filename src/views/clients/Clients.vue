@@ -13,7 +13,7 @@
         v-for="client in clients"
         :key="client.client_id"
         class="client-card"
-        @click="viewDetails(client.client_id)"
+        @click="showView(client)"
         shadow="hover"
       >
         <div class="client-header">
@@ -59,15 +59,13 @@
             </div>
           </div>
 
-          <div class="client-field" v-if="client.redirect_uri.length">
+          <div class="client-field" v-if="client.redirect_uri">
             <span class="field-label">回调地址:</span>
             <div class="field-value">
               <div
-                style="font-weight: 500; font-size: 14px"
+                style="font-weight: 500; font-size: 14px; word-wrap: break-word; width: 100%"
                 v-for="uri in client.redirect_uri"
                 :key="uri"
-                type="info"
-                size="small"
               >
                 {{ uri }}
               </div>
@@ -75,6 +73,7 @@
           </div>
         </div>
       </el-card>
+      <router-view></router-view>
     </div>
 
     <!-- 添加客户端对话框 -->
@@ -83,30 +82,38 @@
       :record="addModel"
       @closed="showAddDialog = false"
     />
+    <ViewClient
+      v-model:show="showViewDialog"
+      :record="editModel"
+      @closed="showViewDialog = false"
+    />
     <!-- 修改客户端对话框 -->
     <EditClientDialog
       v-model:show="showEditDialog"
       :record="editModel"
       @closed="showEditDialog = false"
+      @load="load"
     />
-    <router-view />
   </div>
+  <router-view />
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, toRefs, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useClientsStore } from '@/store/modules/clients.js'
 import { Plus } from '@element-plus/icons-vue'
 import AddClientDialog from './components/AddClientDialog.vue'
+import ViewClient from './components/ViewClient.vue'
 import EditClientDialog from './components/EditClientDialog.vue'
 import UTIL from '@/core/util'
-
+import { ElMessage } from 'element-plus'
 const router = useRouter()
 const clientsStore = useClientsStore()
-const { clients, error, loading } = clientsStore
-
+const { clients, error, loading } = toRefs(clientsStore)
+console.log(clients)
 const showAddDialog = ref(false)
+const showViewDialog = ref(false)
 const showEditDialog = ref(false)
 const addModel = ref({
   clientId: '',
@@ -118,17 +125,28 @@ const addModel = ref({
   accessTokenValidity: '',
   refreshTokenValidity: '',
 })
-const editModel = ref({ ...addModel.value })
-
+const editModel = ref({
+  clientId: '',
+  clientSecret: '',
+  scopes: [],
+  grantTypes: [],
+  redirectUris: [],
+  autoApproves: [],
+  accessTokenValidity: '',
+  refreshTokenValidity: '',
+})
 const hasAddClientPermission = computed(() => UTIL.hasPermissionIn(['CLIENT_ADD']))
 const hasUpdateClientPermission = computed(() => UTIL.hasPermissionIn(['CLIENT_UPDATE']))
 
 const showAdd = () => {
   showAddDialog.value = true
 }
+const showView = (record) => {
+  showViewDialog.value = true
+  editModel.value = { ...record }
+}
 
 const showEdit = (record) => {
-  showEditDialog.value = true
   editModel.value = {
     clientId: record.client_id,
     clientSecret: record.client_secret.replace(/{\w+}/, ''),
@@ -139,14 +157,19 @@ const showEdit = (record) => {
     accessTokenValidity: record.access_token_validity,
     refreshTokenValidity: record.refresh_token_validity,
   }
+  showEditDialog.value = true
 }
 
-const deleteById = (id) => {
-  clientsStore.delete(id)
-}
-
-const viewDetails = (clientId) => {
-  router.push(`/clients/${clientId}`)
+const deleteById = async (id) => {
+  try {
+    const res = clientsStore.delete(id)
+    if (res) {
+      ElMessage.success('客户端信息删除成功')
+      load()
+    }
+  } catch {
+    ElMessage.error('客户端信息删除失败')
+  }
 }
 
 // const getScopeColor = (record, scope) => {
@@ -154,8 +177,12 @@ const viewDetails = (clientId) => {
 //   return record.autoapprove.includes(scope) ? 'success' : 'danger'
 // }
 
-onMounted(() => {
+const load = () => {
   clientsStore.load()
+}
+
+onMounted(() => {
+  load()
 })
 </script>
 
@@ -220,6 +247,7 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 6px;
   flex: 1;
+  width: 100%;
 }
 
 .el-tag {

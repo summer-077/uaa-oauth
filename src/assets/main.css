@@ -34,3 +34,9 @@
 .el-form {
   font-weight: 500;
 }
+.el-form {
+  padding-right: 30px;
+}
+.el-input-number {
+  width: 200px;
+}
