@@ -63,7 +63,7 @@
             <span class="field-label">回调地址:</span>
             <div class="field-value">
               <div
-                style="font-weight: 500; font-size: 14px; word-wrap: break-word; width: 100%"
+                style="font-weight: 500; font-size: 14px; word-wrap: break-word; width: 200px"
                 v-for="uri in client.redirect_uri"
                 :key="uri"
               >
@@ -142,8 +142,17 @@ const showAdd = () => {
   showAddDialog.value = true
 }
 const showView = (record) => {
+  editModel.value = {
+    clientId: record.client_id,
+    clientSecret: record.client_secret.replace(/{\w+}/, ''),
+    scopes: record.scope,
+    grantTypes: record.authorized_grant_types,
+    redirectUris: record.redirect_uri,
+    autoApproves: record.autoapprove,
+    accessTokenValidity: record.access_token_validity,
+    refreshTokenValidity: record.refresh_token_validity,
+  }
   showViewDialog.value = true
-  editModel.value = { ...record }
 }
 
 const showEdit = (record) => {

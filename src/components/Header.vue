@@ -1,5 +1,10 @@
 <template>
-  <div id="header">
+  <div id="header" class="flex flex-row justify-between">
+    <div class="logo">
+      <router-link to="/">
+        <img style="height: 50px" src="@/assets/svg/logo.png" alt="logo" />
+      </router-link>
+    </div>
     <div id="person" class="flex flex-row gap-4 items-center">
       <el-avatar
         :size="50"

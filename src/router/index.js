@@ -39,20 +39,20 @@ const router = createRouter({
               { to: '', label: '用户管理' },
             ],
           },
-          // children: [
-          //   {
-          //     path: ':username',
-          //     component: () =>
-          //       import(/* webpackChunkName: "user-roles" */ '../views/users/UserRoles.vue'),
-          //     meta: {
-          //       breadcrumb: [
-          //         { to: '/', label: '首页' },
-          //         { to: '/users', label: '用户管理' },
-          //         { to: '', label: '分配角色' },
-          //       ],
-          //     },
-          //   },
-          // ],
+          children: [
+            {
+              path: ':username',
+              component: () =>
+                import(/* webpackChunkName: "user-roles" */ '../views/users/UserRoles.vue'),
+              meta: {
+                breadcrumb: [
+                  { to: '/', label: '首页' },
+                  { to: '/users', label: '用户管理' },
+                  { to: '', label: '分配角色' },
+                ],
+              },
+            },
+          ],
         },
         {
           path: 'roles',
@@ -83,6 +83,7 @@ const router = createRouter({
         },
         {
           path: 'permissions',
+          name: '权限管理',
           component: () =>
             import(/* webpackChunkName: "permissions" */ '../views/permissions/Permissions.vue'),
           meta: {
@@ -102,6 +103,8 @@ const router = createRouter({
               { to: '/', label: '首页' },
               { to: '', label: 'OAuth2 客户端管理' },
             ],
+            requiresAuth: true,
+            requiredPermissions: ['ROLE_ADMIN'],
           },
         },
       ],

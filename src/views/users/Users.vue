@@ -16,7 +16,7 @@
         </template>
       </el-page-header>
 
-      <el-descriptions border :column="2">
+      <el-descriptions border :column="2" style="margin: 20px 0">
         <el-descriptions-item label="电子邮件">{{ selectedUser.email }}</el-descriptions-item>
         <el-descriptions-item label="手机">
           <el-link type="primary">{{ selectedUser.mobile }}</el-link>
@@ -134,13 +134,14 @@ import AddUserDialog from './components/AddUserDialog.vue'
 import EditUserDialog from './components/EditUserDialog.vue'
 import { Check, Close } from '@element-plus/icons-vue'
 import UTIL from '@/core/util'
-
+import { useUserRolesStore } from '@/store/modules/user-roles'
 // Router
 const route = useRoute()
 const router = useRouter()
 
 // Pinia Store
 const usersStore = useUsersStore()
+const userRolesStore = useUserRolesStore()
 const { users, error, loading, total } = storeToRefs(usersStore)
 
 // 状态
@@ -189,7 +190,7 @@ const navToUserRoles = (username) => {
 
 const saveUserRoles = () => {
   if (!selectedUser.value) return
-  usersStore.saveUserRoles(selectedUser.value.username)
+  userRolesStore.save(selectedUser.value.username)
 }
 
 const goBack = () => {

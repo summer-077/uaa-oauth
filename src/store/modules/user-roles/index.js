@@ -3,7 +3,7 @@ import ADMIN_API from '@/services/admin.service'
 import UTIL from '@/core/util'
 import router from '@/router'
 import { union, difference } from 'lodash'
-
+import { useUsersStore } from '@/store/modules/users.js'
 export const useUserRolesStore = defineStore('userRoles', {
   state: () => ({
     assignedRoles: [],
@@ -55,6 +55,7 @@ export const useUserRolesStore = defineStore('userRoles', {
       this.loading = true
       this.error = null
       try {
+        debugger
         const res = await ADMIN_API.saveUserRoles(
           username,
           this.assignedRoles.map((role) => role.id),

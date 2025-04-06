@@ -109,7 +109,7 @@ const placeholder = reactive({
   password: '请输入密码',
 })
 const loginMethods = ref([
-  { type: 1, icon: 'wechat', alt: 'WeChat Login' },
+  { type: 1, icon: 'user', alt: 'User Login' },
   { type: 2, icon: 'email', alt: 'Email Login' },
   { type: 3, icon: 'phone', alt: 'Phone Login' },
 ])
